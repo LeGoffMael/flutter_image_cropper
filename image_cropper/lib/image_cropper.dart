@@ -12,13 +12,11 @@
 
 export 'package:image_cropper_platform_interface/image_cropper_platform_interface.dart'
     show
-        CropAspectRatioPreset,
         CropStyle,
         ImageCompressFormat,
         CropAspectRatio,
         CroppedFile,
         PlatformUiSettings,
-
         AndroidUiSettings,
         IOSUiSettings,
         CropperDialogBuilder,

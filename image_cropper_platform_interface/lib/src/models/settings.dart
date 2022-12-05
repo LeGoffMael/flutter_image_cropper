@@ -2,20 +2,14 @@ import 'package:flutter/material.dart';
 
 import '../utils.dart';
 
-///
-/// A set of preset values can be used to setup the menu of crop aspect ratio
-/// options in the cropper view.
-///
-enum CropAspectRatioPreset {
-  original,
-  square,
-  ratio3x2,
-  ratio5x3,
-  ratio4x3,
-  ratio5x4,
-  ratio7x5,
-  ratio16x9
-}
+/// Default list of presets
+const defaultCropAspectRatioPresets = [
+  CropAspectRatio.original,
+  CropAspectRatio.square,
+  CropAspectRatio.ratio3x2,
+  CropAspectRatio.ratio4x3,
+  CropAspectRatio.ratio16x9
+];
 
 ///
 /// Crop style options. There're two supported styles, rectangle and circle.
@@ -32,8 +26,32 @@ class CropAspectRatio {
   final double ratioX;
   final double ratioY;
 
+  /// Used as original image crop size ratio.
+  final bool isOriginal;
+
   const CropAspectRatio({required this.ratioX, required this.ratioY})
-      : assert(ratioX > 0.0 && ratioY > 0.0);
+      : isOriginal = false,
+        assert(ratioX > 0.0 && ratioY > 0.0);
+
+  @protected
+  const CropAspectRatio.origin()
+      : ratioX = double.infinity,
+        ratioY = double.infinity,
+        isOriginal = true;
+
+  static const CropAspectRatio original = CropAspectRatio.origin();
+  static const CropAspectRatio square = CropAspectRatio(ratioX: 1, ratioY: 1);
+  static const CropAspectRatio ratio3x2 = CropAspectRatio(ratioX: 3, ratioY: 2);
+  static const CropAspectRatio ratio5x3 = CropAspectRatio(ratioX: 5, ratioY: 3);
+  static const CropAspectRatio ratio4x3 = CropAspectRatio(ratioX: 4, ratioY: 3);
+  static const CropAspectRatio ratio5x4 = CropAspectRatio(ratioX: 5, ratioY: 4);
+  static const CropAspectRatio ratio7x5 = CropAspectRatio(ratioX: 7, ratioY: 5);
+  static const CropAspectRatio ratio16x9 =
+      CropAspectRatio(ratioX: 16, ratioY: 9);
+
+  /// The [ratioX] and the [ratioY] of this object are swapped and returned
+  /// in a new [CropAspectRatio] object.
+  CropAspectRatio inverse() => CropAspectRatio(ratioX: ratioY, ratioY: ratioX);
 
   @override
   int get hashCode => ratioX.hashCode ^ ratioY.hashCode;
@@ -44,6 +62,19 @@ class CropAspectRatio {
       other is CropAspectRatio &&
           this.ratioX == other.ratioX &&
           this.ratioY == other.ratioY;
+
+  /// Returns the name of the crop aspect ratio preset in `XxY` format.
+  String get name {
+    if (isOriginal) return 'original';
+    if (ratioX == ratioY) return 'square';
+
+    if (isInteger(ratioX) && isInteger(ratioY)) {
+      final gcd = greatestCommonDivisor(ratioX.toInt(), ratioY.toInt());
+      return '${ratioX ~/ gcd}x${ratioY ~/ gcd}';
+    }
+
+    return '${ratioX}x$ratioY';
+  }
 }
 
 ///
@@ -53,28 +84,18 @@ abstract class PlatformUiSettings {
   Map<String, dynamic> toMap();
 }
 
-String aspectRatioPresetName(CropAspectRatioPreset? preset) {
-  switch (preset) {
-    case CropAspectRatioPreset.original:
-      return 'original';
-    case CropAspectRatioPreset.square:
-      return 'square';
-    case CropAspectRatioPreset.ratio3x2:
-      return '3x2';
-    case CropAspectRatioPreset.ratio4x3:
-      return '4x3';
-    case CropAspectRatioPreset.ratio5x3:
-      return '5x3';
-    case CropAspectRatioPreset.ratio5x4:
-      return '5x4';
-    case CropAspectRatioPreset.ratio7x5:
-      return '7x5';
-    case CropAspectRatioPreset.ratio16x9:
-      return '16x9';
-    default:
-      return 'original';
+/// Returns [int] the Greatest common divisor.
+int greatestCommonDivisor(int a, int b) {
+  while (b != 0) {
+    final t = b;
+    b = a % t;
+    a = t;
   }
+  return a;
 }
+
+/// Returns `true` if [value] is an [int].
+bool isInteger(num value) => (value % 1) == 0;
 
 String cropStyleName(CropStyle style) {
   switch (style) {
@@ -158,7 +179,7 @@ class AndroidUiSettings extends PlatformUiSettings {
 
   /// desired aspect ratio is applied (from the list of given aspect ratio presets)
   /// when starting the cropper
-  final CropAspectRatioPreset? initAspectRatio;
+  final CropAspectRatio initAspectRatio;
 
   AndroidUiSettings({
     this.toolbarTitle,
@@ -177,7 +198,7 @@ class AndroidUiSettings extends PlatformUiSettings {
     this.showCropGrid,
     this.lockAspectRatio,
     this.hideBottomControls,
-    this.initAspectRatio,
+    this.initAspectRatio = CropAspectRatio.original,
   });
 
   @override
@@ -199,8 +220,7 @@ class AndroidUiSettings extends PlatformUiSettings {
         'android.show_crop_grid': this.showCropGrid,
         'android.lock_aspect_ratio': this.lockAspectRatio,
         'android.hide_bottom_controls': this.hideBottomControls,
-        'android.init_aspect_ratio':
-            aspectRatioPresetName(this.initAspectRatio),
+        'android.init_aspect_ratio': this.initAspectRatio.name,
       };
 }
 

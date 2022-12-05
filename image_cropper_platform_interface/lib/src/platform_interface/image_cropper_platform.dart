@@ -51,10 +51,8 @@ abstract class ImageCropperPlatform extends PlatformInterface {
   ///
   /// * aspectRatioPresets: controls the list of aspect ratios in the crop menu view.
   /// In Android, you can set the initialized aspect ratio when starting the cropper
-  /// by setting the value of [AndroidUiSettings.initAspectRatio]. Default is a list of
-  /// [CropAspectRatioPreset.original], [CropAspectRatioPreset.square],
-  /// [CropAspectRatioPreset.ratio3x2], [CropAspectRatioPreset.ratio4x3] and
-  /// [CropAspectRatioPreset.ratio16x9].
+  /// by setting the value of [AndroidUiSettings.initAspectRatio].
+  /// Defaults to [defaultCropAspectRatioPresets].
   ///
   /// * cropStyle: controls the style of crop bounds, it can be rectangle or
   /// circle style (default is [CropStyle.rectangle]).
@@ -75,13 +73,7 @@ abstract class ImageCropperPlatform extends PlatformInterface {
     int? maxWidth,
     int? maxHeight,
     CropAspectRatio? aspectRatio,
-    List<CropAspectRatioPreset> aspectRatioPresets = const [
-      CropAspectRatioPreset.original,
-      CropAspectRatioPreset.square,
-      CropAspectRatioPreset.ratio3x2,
-      CropAspectRatioPreset.ratio4x3,
-      CropAspectRatioPreset.ratio16x9
-    ],
+    List<CropAspectRatio> aspectRatioPresets = defaultCropAspectRatioPresets,
     CropStyle cropStyle = CropStyle.rectangle,
     ImageCompressFormat compressFormat = ImageCompressFormat.jpg,
     int compressQuality = 90,
